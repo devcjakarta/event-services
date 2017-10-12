@@ -70,18 +70,10 @@ begin
 
   json := TJSONUtil.Create;
 
-  if Application.Request.Content = '' then
+  if not IsJsonValid(Application.Request.Content) then
   begin
-    json[FIELD_NAME] := _POST[FIELD_NAME];
-    json[FIELD_EMAIL] := _POST[FIELD_EMAIL];
-    json[FIELD_PHONE] := _POST[FIELD_PHONE];
-    json[FIELD_TITLE] := _POST[FIELD_TITLE];
-    json[FIELD_DESCRIPTION] := _POST[FIELD_DESCRIPTION];
-    json[FIELD_URL] := _POST[FIELD_URL];
-    json[FIELD_TECH] := _POST[FIELD_TECH];
-
-    if (isEmpty(_POST[FIELD_NAME]) or isEmpty(_POST[FIELD_EMAIL]) or
-      isEmpty(json[FIELD_PHONE])) then
+    if ((isEmpty(_POST[FIELD_NAME])) or (isEmpty(_POST[FIELD_PHONE])) or
+      (isEmpty(_POST[FIELD_EMAIL]))) then
     begin
       json['code'] := Int16(1);
       Response.Content := json.AsJSON;
@@ -89,7 +81,13 @@ begin
       Exit;
     end;
 
-    // may be
+    json[FIELD_NAME] := _POST[FIELD_NAME];
+    json[FIELD_EMAIL] := _POST[FIELD_EMAIL];
+    json[FIELD_PHONE] := _POST[FIELD_PHONE];
+    json[FIELD_TITLE] := _POST[FIELD_TITLE];
+    json[FIELD_DESCRIPTION] := _POST[FIELD_DESCRIPTION];
+    json[FIELD_URL] := _POST[FIELD_URL];
+    json[FIELD_TECH] := _POST[FIELD_TECH];
 
   end
   else
