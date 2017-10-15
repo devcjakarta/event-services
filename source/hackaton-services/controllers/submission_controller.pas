@@ -5,13 +5,16 @@ unit submission_controller;
 interface
 
 uses
-  submission_model,
+  submission_model, logutil_lib, http_lib,
   Classes, SysUtils, fpcgi, fpjson, HTTPDefs, fastplaz_handler, database_lib;
 
 type
+
+  { TUserModule }
+
   TUserModule = class(TMyCustomWebModule)
   private
-    //FName, FEmail, FPhone, FTitle, FURL, FDescription, FFile, FTech: string;
+    function SendEmailNotification(AName, AEmail, APhone, ATitle: string): boolean;
   public
     Submission: TSubmissionModel;
     constructor CreateNew(AOwner: TComponent; CreateMode: integer); override;
@@ -36,6 +39,10 @@ const
   FIELD_URL = 'url';
   FIELD_FILENAME = 'filename';
   FIELD_STATUS_ID = 'status_id';
+
+  STORAGE_PATH = 'files/hackaton/';
+  CONFIG_REFERER = 'systems/referer';
+  CONFIG_EMAIL_SERVICE = 'systems/email_service';
 
   SUBMISSION_STATUS_NEW = 9;
   SUBMISSION_STATUS_REVIEWED = 8;
@@ -62,26 +69,30 @@ end;
 // POST Method Handler
 procedure TUserModule.Post;
 var
-  authstring: string;
+  i: integer;
+  s, fileName, authString: string;
   json: TJSONUtil;
 begin
-  authstring := Header['Authorization'];
+  authString := Header['Authorization'];
   //TODO: secure post
+
+  s := Config[CONFIG_REFERER];
+  if s <> '' then
+  begin
+    if s <> Request.Referer then
+    begin
+      Response.ContentType := 'application/json';
+      Response.Content := '{}';
+      Exit;
+    end;
+  end;
 
   json := TJSONUtil.Create;
 
-  if Application.Request.Content = '' then
+  if not IsJsonValid(Application.Request.Content) then
   begin
-    json[FIELD_NAME] := _POST[FIELD_NAME];
-    json[FIELD_EMAIL] := _POST[FIELD_EMAIL];
-    json[FIELD_PHONE] := _POST[FIELD_PHONE];
-    json[FIELD_TITLE] := _POST[FIELD_TITLE];
-    json[FIELD_DESCRIPTION] := _POST[FIELD_DESCRIPTION];
-    json[FIELD_URL] := _POST[FIELD_URL];
-    json[FIELD_TECH] := _POST[FIELD_TECH];
-
-    if (isEmpty(_POST[FIELD_NAME]) or isEmpty(_POST[FIELD_EMAIL]) or
-      isEmpty(json[FIELD_PHONE])) then
+    if ((isEmpty(_POST[FIELD_NAME])) or (isEmpty(_POST[FIELD_PHONE])) or
+      (isEmpty(_POST[FIELD_EMAIL]))) then
     begin
       json['code'] := Int16(1);
       Response.Content := json.AsJSON;
@@ -89,8 +100,13 @@ begin
       Exit;
     end;
 
-    // may be
-
+    json[FIELD_NAME] := _POST[FIELD_NAME];
+    json[FIELD_EMAIL] := _POST[FIELD_EMAIL];
+    json[FIELD_PHONE] := _POST[FIELD_PHONE];
+    json[FIELD_TITLE] := _POST[FIELD_TITLE];
+    json[FIELD_DESCRIPTION] := _POST[FIELD_DESCRIPTION];
+    json[FIELD_URL] := _POST[FIELD_URL];
+    json[FIELD_TECH] := _POST[FIELD_TECH];
   end
   else
     json.LoadFromJsonString(Application.Request.Content);
@@ -108,12 +124,34 @@ begin
   Submission[FIELD_DESCRIPTION] := json[FIELD_DESCRIPTION];
   Submission[FIELD_TECH] := json[FIELD_TECH];
   Submission[FIELD_URL] := json[FIELD_URL];
-  Submission[FIELD_FILENAME] := '';  //TODO: prepare if file is required
+  if Application.Request.Files.Count > 0 then
+    Submission[FIELD_FILENAME] := Application.Request.Files[0].FileName
+  else
+    Submission[FIELD_FILENAME] := '';
   Submission[FIELD_STATUS_ID] := SUBMISSION_STATUS_NEW;
   Submission.Save();
+
+  //Save File
+  if Application.Request.Files.Count > 0 then
+  begin
+    try
+      for i := 0 to Application.Request.Files.Count - 1 do
+      begin
+        fileName := i2s(Submission.LastInsertID) + '-' + LowerCase(
+          json[FIELD_EMAIL]) + '-' + LowerCase(json[FIELD_TITLE]) +
+          '-' + Application.Request.Files[i].FileName;
+        FileCopy(Application.Request.Files[i].LocalFileName, STORAGE_PATH + fileName);
+        DeleteFile(Application.Request.Files[i].LocalFileName);
+      end;
+      json['files'] := 'y';
+    except
+    end;
+  end;
   Submission.Free;
 
-  //TODO: Send Email Notification
+  //Send Email Notification
+  SendEmailNotification(json[FIELD_NAME], json[FIELD_EMAIL],
+    json[FIELD_PHONE], json[FIELD_TITLE]);
 
   json['code'] := Int16(0);
   json['status'] := 'OK';
@@ -124,12 +162,41 @@ begin
   json.Free;
 end;
 
+function TUserModule.SendEmailNotification(AName, AEmail, APhone,
+  ATitle: string): boolean;
+var
+  urlTarget: string;
+  responseHttp: IHTTPResponse;
+begin
+  Result := False;
+  urlTarget := Config[CONFIG_EMAIL_SERVICE];
+  if urlTarget = '' then
+    Exit;
+  with THTTPLib.Create(urlTarget) do
+  begin
+    FormData[FIELD_NAME] := AName;
+    FormData[FIELD_EMAIL] := AEmail;
+    FormData[FIELD_PHONE] := APhone;
+    FormData[FIELD_TITLE] := ATitle;
+    FormData['type'] := 'notification';
+
+    responseHttp := Post;
+    if responseHttp.ResultCode <> 200 then
+    begin
+      LogUtil.Add('ERR: ' + responseHttp.ResultText, 'MAIL');
+    end
+    else
+      Result := True;
+    Free;
+  end;
+end;
+
 
 
 
 initialization
   // -> http://yourdomainname/user
   // The following line should be moved to a file "routes.pas"
-  Route.Add('user', TUserModule);
+  Route.Add('submission', TUserModule);
 
 end.

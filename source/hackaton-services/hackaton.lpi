@@ -30,13 +30,10 @@
         <FormatVersion Value="1"/>
       </local>
     </RunParams>
-    <RequiredPackages Count="2">
+    <RequiredPackages Count="1">
       <Item1>
-        <PackageName Value="LCL"/>
-      </Item1>
-      <Item2>
         <PackageName Value="fastplaz_runtime"/>
-      </Item2>
+      </Item1>
     </RequiredPackages>
     <Units Count="5">
       <Unit0>
@@ -76,6 +73,10 @@
       <ConfigFile>
         <ConfigFilePath Value="extra.cfg"/>
       </ConfigFile>
+      <CustomOptions Value="-dXMAILER"/>
+      <OtherDefines Count="1">
+        <Define0 Value="XMAILER"/>
+      </OtherDefines>
     </Other>
   </CompilerOptions>
   <Debugging>
