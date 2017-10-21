@@ -35,7 +35,7 @@
         <PackageName Value="fastplaz_runtime"/>
       </Item1>
     </RequiredPackages>
-    <Units Count="5">
+    <Units Count="10">
       <Unit0>
         <Filename Value="hackaton.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -56,6 +56,26 @@
         <Filename Value="models\submission_model.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit4>
+      <Unit5>
+        <Filename Value="controllers\event_controller.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit5>
+      <Unit6>
+        <Filename Value="models\event_model.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit6>
+      <Unit7>
+        <Filename Value="models\participant_model.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit7>
+      <Unit8>
+        <Filename Value="models\eventparticipant_model.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit8>
+      <Unit9>
+        <Filename Value="models\participantblacklist_model.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit9>
     </Units>
   </ProjectOptions>
   <CompilerOptions>

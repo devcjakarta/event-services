@@ -5,8 +5,8 @@ program hackaton;
 uses
   {$IFNDEF Windows}cthreads, {$ENDIF}
   fpcgi, sysutils, fastplaz_handler, common, main, routes,
-submission_controller,
-  submission_model;
+  submission_controller, submission_model, event_controller, event_model,
+  participant_model, eventparticipant_model, participantblacklist_model;
 
 begin
   Application.Title:='Jakarta Challenge 2017';

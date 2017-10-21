@@ -14,7 +14,8 @@ type
 
   TUserModule = class(TMyCustomWebModule)
   private
-    function SendEmailNotification(AName, AEmail, APhone, ATitle: string): boolean;
+    function SendEmailNotification(AName, AEmail, APhone, ASubject,
+      ABody: string): boolean;
   public
     Submission: TSubmissionModel;
     constructor CreateNew(AOwner: TComponent; CreateMode: integer); override;
@@ -34,7 +35,10 @@ const
   FIELD_EMAIL = 'email';
   FIELD_PHONE = 'phone';
   FIELD_TITLE = 'title';
+  FIELD_SUBJECT = 'subject';
+  FIELD_BODY = 'body';
   FIELD_DESCRIPTION = 'description';
+  FIELD_ORIGIN = 'origin';
   FIELD_TECH = 'tech';
   FIELD_URL = 'url';
   FIELD_FILENAME = 'filename';
@@ -106,7 +110,8 @@ begin
     json[FIELD_TITLE] := _POST[FIELD_TITLE];
     json[FIELD_DESCRIPTION] := _POST[FIELD_DESCRIPTION];
     json[FIELD_URL] := _POST[FIELD_URL];
-    json[FIELD_TECH] := _POST[FIELD_TECH];
+    //json[FIELD_TECH] := _POST[FIELD_TECH];
+    json[FIELD_ORIGIN] := _POST[FIELD_ORIGIN];
   end
   else
     json.LoadFromJsonString(Application.Request.Content);
@@ -122,7 +127,8 @@ begin
   Submission[FIELD_PHONE] := json[FIELD_PHONE];
   Submission[FIELD_TITLE] := json[FIELD_TITLE];
   Submission[FIELD_DESCRIPTION] := json[FIELD_DESCRIPTION];
-  Submission[FIELD_TECH] := json[FIELD_TECH];
+  Submission[FIELD_ORIGIN] := json[FIELD_ORIGIN];
+  //Submission[FIELD_TECH] := json[FIELD_TECH];
   Submission[FIELD_URL] := json[FIELD_URL];
   if Application.Request.Files.Count > 0 then
     Submission[FIELD_FILENAME] := Application.Request.Files[0].FileName
@@ -151,7 +157,7 @@ begin
 
   //Send Email Notification
   SendEmailNotification(json[FIELD_NAME], json[FIELD_EMAIL],
-    json[FIELD_PHONE], json[FIELD_TITLE]);
+    json[FIELD_PHONE], json[FIELD_TITLE], '');
 
   json['code'] := Int16(0);
   json['status'] := 'OK';
@@ -163,7 +169,7 @@ begin
 end;
 
 function TUserModule.SendEmailNotification(AName, AEmail, APhone,
-  ATitle: string): boolean;
+  ASubject, ABody: string): boolean;
 var
   urlTarget: string;
   responseHttp: IHTTPResponse;
@@ -177,7 +183,9 @@ begin
     FormData[FIELD_NAME] := AName;
     FormData[FIELD_EMAIL] := AEmail;
     FormData[FIELD_PHONE] := APhone;
-    FormData[FIELD_TITLE] := ATitle;
+    FormData[FIELD_TITLE] := ASubject;   // TODO: remove
+    FormData[FIELD_SUBJECT] := ASubject;
+    FormData[FIELD_BODY] := ABody;
     FormData['type'] := 'notification';
 
     responseHttp := Post;

@@ -1,7 +1,7 @@
 {
   "systems" : {
-    "sitename" : "Jakarta Challenge 2017",
-    "slogan" : "Jakarta Challenge 2017",
+    "sitename" : "Developer Circles Jakarta",
+    "slogan" : "Developer Circles Jakarta",
     "baseurl" : "",
     "admin_email" : "jakarta@devcid.com",
     "development" : true,
@@ -15,7 +15,7 @@
     "error_url" : "\/",
     "session_timeout" : 0,
     "referer": "",
-    "email_service": "http://your-email-service",
+    "email_service": "http://email_service/",
     "error_redirect" : false
   },
   "database" : {
@@ -23,11 +23,11 @@
       "driver" : "MySQL 5.7",
       "hostname" : "localhost",
       "port" : "",
-      "username" : "your_db_username",
-      "password" : "your_db_password",
-      "database_name" : "your_database_name",
+      "username" : "root",
+      "password" : "root",
+      "database_name" : "yourdatabasename",
       "prefix" : "",
-      "library" : ""
+      "library_win" : "..\/..\/..\/libs\/win\/libmysql.dll"
     }
   },
   "mailer" : {
