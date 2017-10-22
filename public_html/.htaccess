@@ -10,7 +10,7 @@ AddHandler cgi-script .pas
 AddHandler cgi-script .exe
 Options +ExecCGI
 
-DirectoryIndex hackaton.bin
+DirectoryIndex services.bin
 
 SetEnvIf Authorization "(.*)" Authorization=$1
 SetEnvIf ClientID "(.*)" ClientID=$1
@@ -24,5 +24,5 @@ RewriteCond %{REQUEST_FILENAME} -f [OR]
 RewriteCond %{REQUEST_FILENAME} -l
 RewriteRule ^(.*)$ - [NC,L]
 #RewriteRule ^(.*)$ 404.php [QSA,L]
-RewriteRule ^(.*)$ hackaton.bin/$1 [QSA,L]
+RewriteRule ^(.*)$ services.bin/$1 [QSA,L]
 

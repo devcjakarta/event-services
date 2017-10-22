@@ -47,7 +47,6 @@ end;
 function TParticipantModel.Add(AEmail, AName, APhone, AInstitution,
   AOccupation: string): boolean;
 var
-  i: integer;
   sql: string;
 begin
   Result := False;
